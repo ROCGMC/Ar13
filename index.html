@@ -3,146 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RMS CRYPTO V6 - PWA</title>
+    <title>RMS CRYPTO V6.1</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        :root { --primary: #00ff88; --bg: #0a0a0c; --text: #f0f0f0; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        header { background: #1a241a; padding: 15px; text-align: center; border-bottom: 2px solid var(--primary); font-weight: bold; color: var(--primary); }
-        .container { padding: 20px; flex: 1; overflow-y: auto; max-width: 500px; margin: auto; width: 100%; box-sizing: border-box; }
-        .card { background: #16161d; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        input, textarea { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 12px; margin: 10px 0; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        :root { --primary: #00ff88; --bg: #0a0a0c; --card: #16161d; --text: #f0f0f0; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
+        
+        header { 
+            background: #1a241a; padding: 20px; text-align: center; 
+            border-bottom: 2px solid var(--primary); font-weight: bold; 
+            color: var(--primary); letter-spacing: 2px;
+        }
+
+        .container { padding: 20px; max-width: 500px; margin: auto; }
+        
+        .card { 
+            background: var(--card); padding: 20px; border-radius: 15px; 
+            margin-bottom: 20px; border: 1px solid #333; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        h3 { margin-top: 0; color: var(--primary); font-size: 1.1rem; }
+
+        input, textarea { 
+            width: 100%; background: #222; border: 1px solid #444; 
+            color: white; padding: 12px; margin: 10px 0; border-radius: 8px; 
+            box-sizing: border-box; font-size: 1rem;
+        }
+
+        .btn { 
+            width: 100%; padding: 16px; border: none; border-radius: 12px; 
+            font-weight: bold; cursor: pointer; transition: all 0.2s ease;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+            font-size: 1rem;
+        }
+
+        .btn:active { transform: scale(0.96); opacity: 0.8; }
+        .btn:disabled { background: #444 !important; color: #888; cursor: not-allowed; }
+
         .btn-write { background: var(--primary); color: #000; }
-        .btn-read { background: #6f42c1; color: #fff; margin-top: 10px; }
-        #status { font-size: 0.8rem; text-align: center; margin: 10px; color: #888; }
-        #viewArea { display: none; margin-top: 20px; border-top: 1px solid var(--primary); padding-top: 15px; }
-        .verify-pass { color: var(--primary); font-weight: bold; }
-        .verify-fail { color: #ff4444; font-weight: bold; }
+        .btn-read { background: #6f42c1; color: #fff; }
+
+        /* 掃描中的脈動動畫 */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0px rgba(111, 66, 193, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(111, 66, 193, 0); }
+            100% { box-shadow: 0 0 0 0px rgba(111, 66, 193, 0); }
+        }
+        .scanning { animation: pulse 1.5s infinite; position: relative; }
+
+        #status-bar { text-align: center; font-size: 0.75rem; color: #666; margin-bottom: 15px; }
+        
+        #viewArea { 
+            display: none; margin-top: 20px; border-top: 1px solid #444; 
+            padding-top: 20px; animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .verify-pass { color: var(--primary); font-weight: bold; display: block; margin-bottom: 10px; }
+        .verify-fail { color: #ff4444; font-weight: bold; display: block; margin-bottom: 10px; }
+
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9); color: #000; padding: 12px 24px;
+            border-radius: 50px; font-size: 0.9rem; font-weight: bold;
+            z-index: 9999; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
 
-<header>RMS CRYPTO V6 - 永久金鑰版</header>
+<header>RMS CRYPTO V6.1</header>
 
 <div class="container">
-    <div id="status">正在初始化安全模組...</div>
+    <div id="status-bar">系統初始化中...</div>
 
     <div class="card">
-        <h3>✍️ 簽署寫入</h3>
-        <input type="text" id="editTitle" placeholder="標題">
-        <textarea id="editDesc" rows="3" placeholder="描述內容..."></textarea>
-        <button class="btn btn-write" onclick="saveAndSign()">儲存並寫入標籤</button>
+        <h3>✍️ 安全簽署寫入</h3>
+        <input type="text" id="editTitle" placeholder="物品名稱/標題">
+        <textarea id="editDesc" rows="3" placeholder="詳細描述內容..."></textarea>
+        <button id="writeBtn" class="btn btn-write" onclick="saveAndSign()">儲存並寫入標籤</button>
     </div>
 
     <div class="card">
-        <h3>📖 驗證讀取</h3>
-        <button class="btn btn-read" onclick="startSecureRead()">開始感應標籤</button>
+        <h3>📖 真偽驗證讀取</h3>
+        <button id="readBtn" class="btn btn-read" onclick="startSecureRead()">開始感應標籤</button>
+        
         <div id="viewArea">
             <div id="vResult"></div>
-            <h2 id="vTitle"></h2>
-            <p id="vDesc"></p>
+            <h2 id="vTitle" style="margin: 5px 0; color: var(--primary);"></h2>
+            <p id="vDesc" style="line-height: 1.6; color: #ccc;"></p>
         </div>
     </div>
 </div>
+
+<div id="toast" class="toast"></div>
 
 <script>
     let db;
     let keyPair = {};
 
-    // 1. 初始化 IndexedDB 並載入/生成金鑰
-    const request = indexedDB.open("RMS_Crypto_DB", 1);
+    // 顯示反饋提示
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 2500);
+    }
+
+    // 初始化 IndexedDB 儲存金鑰 (防止私鑰刷新遺失)
+    const request = indexedDB.open("RMS_Security_DB", 1);
     request.onupgradeneeded = (e) => {
         db = e.target.result;
-        db.createObjectStore("keys");
+        db.createObjectStore("crypto_keys");
     };
     request.onsuccess = (e) => {
         db = e.target.result;
-        loadKeys();
+        initSecurity();
     };
 
-    async function loadKeys() {
-        const tx = db.transaction("keys", "readonly");
-        const store = tx.objectStore("keys");
-        const getReq = store.get("main_keypair");
+    async function initSecurity() {
+        const tx = db.transaction("crypto_keys", "readonly");
+        const store = tx.objectStore("crypto_keys");
+        const getReq = store.get("rms_v6_keypair");
         
         getReq.onsuccess = async () => {
             if (getReq.result) {
                 keyPair = getReq.result;
-                document.getElementById('status').innerText = "✅ 安全金鑰已載入 (持久化)";
+                document.getElementById('status-bar').innerText = "🛡️ 安全模組已就緒 (永久金鑰)";
             } else {
-                document.getElementById('status').innerText = "🔑 正在生成永久金鑰...";
-                await generatePersistentKeys();
+                document.getElementById('status-bar').innerText = "🔑 正在生成唯一身份金鑰...";
+                await generateAndStoreKeys();
             }
         };
     }
 
-    async function generatePersistentKeys() {
-        const newKeyPair = await window.crypto.subtle.generateKey(
+    async function generateAndStoreKeys() {
+        const newKeys = await window.crypto.subtle.generateKey(
             { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
             true, ["sign", "verify"]
         );
-        keyPair = newKeyPair;
-        const tx = db.transaction("keys", "readwrite");
-        tx.objectStore("keys").put(newKeyPair, "main_keypair");
-        document.getElementById('status').innerText = "✅ 永久金鑰已生成並儲存";
+        keyPair = newKeys;
+        const tx = db.transaction("crypto_keys", "readwrite");
+        tx.objectStore("crypto_keys").put(newKeys, "rms_v6_keypair");
+        document.getElementById('status-bar').innerText = "🛡️ 身份金鑰生成完畢";
     }
 
-    // 2. 簽署並寫入 NFC
+    // 寫入邏輯
     async function saveAndSign() {
+        const btn = document.getElementById('writeBtn');
         const title = document.getElementById('editTitle').value;
-        const desc = document.getElementById('editDesc').value;
-        if (!title) return alert("標題必填");
+        if (!title) return showToast("⚠️ 請輸入標題");
 
-        const pairId = "RMS_" + Date.now();
-        const encoder = new TextEncoder();
-        const signature = await window.crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, encoder.encode(pairId));
-        const sigBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
-
-        const data = { title, desc, id: pairId, sig: sigBase64 };
-        localStorage.setItem(pairId, JSON.stringify(data));
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = "🔒 正在加密簽署...";
 
         try {
+            const pairId = "RMS_" + Date.now();
+            const encoder = new TextEncoder();
+            
+            // 使用私鑰簽名
+            const signature = await window.crypto.subtle.sign(
+                "RSASSA-PKCS1-v1_5", keyPair.privateKey, encoder.encode(pairId)
+            );
+            const sigBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
+
+            // 存入本地資料
+            const rmsData = { title, desc: document.getElementById('editDesc').value, id: pairId, sig: sigBase64 };
+            localStorage.setItem(pairId, JSON.stringify(rmsData));
+
+            btn.innerText = "📡 請靠近標籤...";
+            showToast("請將 NFC 標籤貼近手機感應區");
+
             const ndef = new NDEFReader();
             await ndef.write(`${pairId}|${sigBase64}`);
-            alert("✅ 寫入成功！標籤已封印數位簽章。");
-        } catch (e) { alert("NFC 寫入失敗：" + e); }
+            
+            showToast("✅ 寫入成功並已封印簽章！");
+            btn.innerText = "✅ 完成";
+            setTimeout(() => { location.reload(); }, 1500);
+        } catch (e) {
+            showToast("❌ 錯誤：" + e.message);
+            btn.disabled = false;
+            btn.innerText = originalText;
+        }
     }
 
-    // 3. 讀取並驗證
+    // 讀取邏輯
     async function startSecureRead() {
+        const btn = document.getElementById('readBtn');
         try {
             const ndef = new NDEFReader();
             await ndef.scan();
-            document.getElementById('status').innerText = "📡 掃描中，請靠近標籤...";
             
+            btn.classList.add('scanning');
+            btn.innerText = "📡 正在尋找標籤...";
+            showToast("感應中...");
+
             ndef.onreading = async ({ message }) => {
+                btn.classList.remove('scanning');
+                btn.innerText = "🔍 驗證簽章中...";
+                
                 const raw = new TextDecoder().decode(message.records[0].data);
                 const [pairId, sigBase64] = raw.split('|');
                 
+                if (!pairId || !sigBase64) {
+                    showToast("❌ 無法識別的標籤格式");
+                    return;
+                }
+
+                // 使用公鑰驗證
                 const sigArray = new Uint8Array(atob(sigBase64).split("").map(c => c.charCodeAt(0)));
                 const isValid = await window.crypto.subtle.verify(
                     "RSASSA-PKCS1-v1_5", keyPair.publicKey, sigArray, new TextEncoder().encode(pairId)
                 );
 
                 const view = document.getElementById('viewArea');
-                const vRes = document.getElementById('vResult');
                 view.style.display = 'block';
+                btn.innerText = "📖 開始感應標籤";
 
                 if (isValid) {
-                    vRes.innerHTML = "<span class='verify-pass'>🛡️ 驗證通過：正品標籤</span>";
+                    showToast("🛡️ 驗證通過：此為原始標籤");
+                    document.getElementById('vResult').innerHTML = "<span class='verify-pass'>🛡️ 數位簽章驗證成功 (正品)</span>";
                     const localData = JSON.parse(localStorage.getItem(pairId) || "{}");
-                    document.getElementById('vTitle').innerText = localData.title || "未知資料";
-                    document.getElementById('vDesc').innerText = localData.desc || "無描述內容";
+                    document.getElementById('vTitle').innerText = localData.title || "未知內容";
+                    document.getElementById('vDesc').innerText = localData.desc || "無描述資料";
                 } else {
-                    vRes.innerHTML = "<span class='verify-fail'>⚠️ 警告：簽章不符，可能是偽造標籤！</span>";
-                    document.getElementById('vTitle').innerText = "攔截存取";
-                    document.getElementById('vDesc').innerText = "";
+                    showToast("⚠️ 警告：標籤可能被複製或篡改！");
+                    document.getElementById('vResult').innerHTML = "<span class='verify-fail'>⚠️ 警告：簽章無效 (偽造品)</span>";
+                    document.getElementById('vTitle').innerText = "非法存取";
+                    document.getElementById('vDesc').innerText = "此標籤的簽章與您的金鑰不匹配。";
                 }
             };
-        } catch (e) { alert("讀取失敗"); }
+        } catch (e) {
+            showToast("❌ 無法啟動掃描：" + e.message);
+        }
     }
 
+    // 註冊 PWA
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js');
     }

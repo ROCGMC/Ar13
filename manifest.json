@@ -1,15 +1,26 @@
 {
-  "name": "RMS TECH V4",
-  "short_name": "RMS V4",
-  "start_url": ".",
+  "name": "RMS CRYPTO TECH V5",
+  "short_name": "RMS Crypto",
+  "description": "具備 RSA 數位簽署與防偽驗證的 NFC 管理系統",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0a0c",
-  "theme_color": "#00d2ff",
+  "theme_color": "#00ff88",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon.png",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "permissions": [
+    "nfc"
   ]
 }

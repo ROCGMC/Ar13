@@ -1,6 +1,7 @@
 {
-  "name": "RMS CRYPTO V6",
-  "short_name": "RMS Crypto",
+  "name": "RMS CRYPTO SECURE",
+  "short_name": "RMS V6",
+  "description": "NFC 數位簽章與防偽管理系統",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0a0c",

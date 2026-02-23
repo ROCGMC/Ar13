@@ -3,189 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RMS 科技 - 數位化存取系統</title>
+    <title>RMS 科技 - 實體存取系統</title>
+    <link rel="manifest" href="manifest.json">
     <style>
-        :root { --primary: #007bff; --bg: #0f0f12; --card: #1e1e24; --text: #e0e0e0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: var(--card); border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 450px; }
-        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; letter-spacing: 2px; }
-        .version { text-align: center; font-size: 0.7rem; opacity: 0.6; margin-bottom: 20px; }
+        :root { --primary: #00d2ff; --bg: #0a0a0c; --card: #16161d; --text: #f0f0f0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
         
-        /* 密碼輸入區 */
-        .auth-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
-        input { background: #2a2a32; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; text-align: center; font-size: 1.1rem; }
-        .pin-field { grid-column: span 4; letter-spacing: 8px; }
-        .alpha-field { grid-column: span 2; text-transform: uppercase; }
+        /* Header & Nav */
+        header { background: #1a1a24; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 100; }
+        .menu-btn { cursor: pointer; font-size: 1.8rem; color: var(--primary); }
         
-        /* 按鈕樣式 */
-        .btn { border: none; border-radius: 8px; padding: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; margin: 5px 0; }
-        .btn-connect { background: var(--primary); color: white; }
-        .btn-nfc { background: #6f42c1; color: white; }
-        .btn:hover { opacity: 0.8; }
+        /* Drawer Menu */
+        #drawer { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--card); transition: 0.3s ease-in-out; z-index: 1000; padding-top: 60px; box-shadow: -5px 0 15px rgba(0,0,0,0.7); }
+        .menu-item { padding: 20px; border-bottom: 1px solid #333; cursor: pointer; font-size: 1.1rem; }
+        .menu-item:hover { background: #252530; color: var(--primary); }
+
+        /* Container */
+        .container { padding: 20px; max-width: 600px; margin: auto; }
+        .mode-section { display: none; animation: fadeIn 0.4s; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* UI Elements */
+        input, textarea { width: 100%; background: #222; border: 1px solid #444; color: white; padding: 12px; margin: 10px 0; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 1rem; transition: 0.2s; }
+        .btn-save { background: var(--primary); color: #000; }
+        .btn-scan { background: #6f42c1; color: #fff; }
+        .btn:active { transform: scale(0.98); }
+
+        #preview { width: 100%; border-radius: 12px; margin-top: 15px; display: none; border: 1px solid #444; }
+        .status-bar { text-align: center; font-size: 0.8rem; opacity: 0.5; margin-bottom: 20px; }
         
-        /* 檔案清單 */
-        #fileList { margin-top: 20px; background: #15151a; border-radius: 10px; padding: 10px; max-height: 300px; overflow-y: auto; }
-        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; font-size: 0.9rem; }
-        .status-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
-        .locked { background: #dc3545; color: white; }
-        .unlocked { background: #28a745; color: white; }
-        
-        .level-select { width: 100%; padding: 8px; margin-bottom: 15px; background: #2a2a32; color: white; border-radius: 5px; }
+        #viewArea { background: #1a1a24; padding: 20px; border-radius: 15px; margin-top: 20px; display: none; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>RMS TECH</h1>
-    <div class="version">DIGITAL ACCESS SYSTEM | 3-TIER SECURITY</div>
+<header>
+    <div style="font-weight: bold; letter-spacing: 3px; color: var(--primary);">RMS TECH</div>
+    <div class="menu-btn" onclick="toggleMenu()">☰</div>
+</header>
 
-    <button id="btnConnect" class="btn btn-connect">🔌 連線 USB 儲存裝置</button>
+<div id="drawer">
+    <div class="menu-item" onclick="connectUsb()">🔌 1. 連線 USB 裝置</div>
+    <div class="menu-item" onclick="switchMode('write')">✍️ 2. 寫入新配檔</div>
+    <div class="menu-item" onclick="switchMode('read')">📖 3. 讀取 NFC 標籤</div>
+</div>
 
-    <div id="mainSection" style="display:none; margin-top: 20px;">
-        <label>安全層級：</label>
-        <select id="levelSelect" class="level-select">
-            <option value="1A">Level 1A (8-PIN + 2-Alpha)</option>
-            <option value="2SA">Level 2SA (Pure NFC UID)</option>
-            <option value="3TA" selected>Level 3TA (NFC + 8-PIN + 2-Alpha)</option>
-        </select>
+<div class="container">
+    <div id="usbStatus" class="status-bar">USB 狀態：未連線</div>
 
-        <div class="auth-grid">
-            <input type="password" id="pinInput" class="pin-field" maxlength="8" placeholder="8-DIGIT PIN">
-            <input type="text" id="alpha1" class="alpha-field" maxlength="1" placeholder="A">
-            <input type="text" id="alpha2" class="alpha-field" maxlength="1" placeholder="B">
-        </div>
+    <div id="writeSection" class="mode-section">
+        <h2 style="color:var(--primary)">寫入模式</h2>
+        <input type="text" id="editTitle" placeholder="請輸入標題">
+        <textarea id="editDesc" rows="4" placeholder="請輸入敘述字串..."></textarea>
+        <label style="font-size: 0.8rem; opacity: 0.7;">附加圖片：</label>
+        <input type="file" id="fileInput" accept="image/*" onchange="previewImage(this)">
+        <img id="preview">
+        <button class="btn btn-save" onclick="saveAndPair()">💾 儲存並寫入 NFC</button>
+    </div>
+
+    <div id="readSection" class="mode-section active">
+        <h2 style="color:var(--primary)">讀取模式</h2>
+        <p style="opacity:0.7;">點擊下方按鈕後，靠近 NFC 標籤即可自動開啟 USB 內的配對檔。</p>
+        <button class="btn btn-scan" onclick="startScan()">📳 開始感應標籤</button>
         
-        <button id="btnNfc" class="btn btn-nfc">📳 感應 NFC 標籤</button>
-        <div id="nfcStatus" style="text-align:center; font-size:0.8rem; margin:5px; color:#aaa;">未感應標籤</div>
-
-        <div id="fileList">
-            <div style="text-align:center; color:#666;">等待目錄授權...</div>
+        <div id="viewArea">
+            <h3 id="viewTitle" style="margin-top:0; color:var(--primary);"></h3>
+            <p id="viewDesc" style="line-height:1.6;"></p>
+            <img id="viewImg" style="width:100%; border-radius:8px; margin-top:10px;">
         </div>
     </div>
 </div>
 
 <script>
-    let dirHandle;
-    let currentNfcUid = "";
-    const SALT = "RMS_TECH_PRIVATE_SALT_2024";
+    let rmsDirHandle;
+    let base64Image = "";
 
-    // 1. 連線 USB
-    document.getElementById('btnConnect').onclick = async () => {
+    // PWA Service Worker 註冊
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
+
+    function toggleMenu() {
+        const drawer = document.getElementById('drawer');
+        drawer.style.right = drawer.style.right === '0px' ? '-280px' : '0px';
+    }
+
+    function switchMode(mode) {
+        document.querySelectorAll('.mode-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(mode + 'Section').classList.add('active');
+        toggleMenu();
+    }
+
+    async function connectUsb() {
         try {
-            dirHandle = await window.showDirectoryPicker();
-            document.getElementById('mainSection').style.display = 'block';
-            document.getElementById('btnConnect').innerText = "✅ USB 已就緒";
-            renderFiles();
-        } catch (e) { alert("連線取消或失敗"); }
-    };
+            const root = await window.showDirectoryPicker();
+            rmsDirHandle = await root.getDirectoryHandle('RMS', { create: true });
+            document.getElementById('usbStatus').innerText = "USB 狀態：/RMS 已就緒";
+            toggleMenu();
+        } catch (e) { alert("連線失敗，請確保選擇 USB 根目錄"); }
+    }
 
-    // 2. NFC 讀取器
-    document.getElementById('btnNfc').onclick = async () => {
+    function previewImage(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            base64Image = e.target.result;
+            const img = document.getElementById('preview');
+            img.src = base64Image;
+            img.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function saveAndPair() {
+        if (!rmsDirHandle) return alert("請先從選單連線 USB！");
+        const title = document.getElementById('editTitle').value;
+        const desc = document.getElementById('editDesc').value;
+        if (!title) return alert("標題不能為空");
+
+        const pairId = "RMS_" + Date.now();
+
+        try {
+            // 1. 寫入 USB
+            const rmsData = { title, desc, image: base64Image, id: pairId, time: new Date().toLocaleString() };
+            const fileHandle = await rmsDirHandle.getFileHandle(`${pairId}.rms`, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(JSON.stringify(rmsData));
+            await writable.close();
+
+            // 2. 寫入 NFC
+            alert("請靠近 NFC 標籤進行實體配對...");
+            const ndef = new NDEFReader();
+            await ndef.write(pairId);
+            
+            alert("✅ 配對成功！\n資料已存入 USB，標籤已寫入索引。");
+            location.reload(); 
+        } catch (e) { alert("錯誤：" + e); }
+    }
+
+    async function startScan() {
+        if (!rmsDirHandle) return alert("請先連線 USB！");
         try {
             const ndef = new NDEFReader();
             await ndef.scan();
-            document.getElementById('nfcStatus').innerText = "📡 正在感應...";
-            ndef.onreading = event => {
-                currentNfcUid = event.serialNumber;
-                document.getElementById('nfcStatus').innerText = "✅ 已連結標籤: " + currentNfcUid;
-            };
-        } catch (e) { alert("此裝置不支援 NFC 或權限未開啟"); }
-    };
-
-    // 3. 核心加解密運算
-    async function getRMSKey(level) {
-        const pin = document.getElementById('pinInput').value;
-        const a1 = document.getElementById('alpha1').value.toUpperCase();
-        const a2 = document.getElementById('alpha2').value.toUpperCase();
-        
-        if ((level.includes("A") || level === "3TA") && pin.length !== 8) throw "請輸入正確 8 位 PIN";
-        if (level.includes("SA") && !currentNfcUid) throw "請先感應 NFC 標籤";
-        
-        let seed = "";
-        if (level === "1A") seed = pin + a1 + a2 + SALT;
-        if (level === "2SA") seed = currentNfcUid + SALT;
-        if (level === "3TA") seed = pin + a1 + a2 + currentNfcUid + SALT;
-
-        const msgUint8 = new TextEncoder().encode(seed);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-        return hashBuffer;
-    }
-
-    // 4. 渲染檔案清單
-    async function renderFiles() {
-        const list = document.getElementById('fileList');
-        list.innerHTML = "";
-        for await (const entry of dirHandle.values()) {
-            if (entry.kind !== 'file') continue;
-            const isRMS = entry.name.endsWith('.rms');
-            const div = document.createElement('div');
-            div.className = 'file-item';
-            div.innerHTML = `
-                <span>${entry.name} <span class="status-tag ${isRMS?'locked':'unlocked'}">${isRMS?'加密':'原始'}</span></span>
-                <button onclick="processFile('${entry.name}')">${isRMS ? '⚡ 解鎖' : '🔒 加密'}</button>
-            `;
-            list.appendChild(div);
-        }
-    }
-
-    // 5. 處理檔案程序
-    async function processFile(name) {
-        const level = document.getElementById('levelSelect').value;
-        try {
-            const keyBuffer = await getRMSKey(level);
-            const fileHandle = await dirHandle.getFileHandle(name);
-            const file = await fileHandle.getFile();
-            let buffer = await file.arrayBuffer();
-            let bytes = new Uint8Array(buffer);
-
-            if (name.endsWith('.rms')) {
-                // 解密邏輯
-                const checksum = bytes[0]; // 簡易校驗
-                const failCount = bytes[bytes.length - 1] - 48;
-
-                // 檢查密碼 (這裡使用 Key 的第一個 Byte 做簡易 Checksum)
-                if (checksum !== new Uint8Array(keyBuffer)[0]) {
-                    // 密碼錯誤：更新失敗紀錄
-                    bytes[bytes.length - 1] += 1;
-                    const writable = await fileHandle.createWritable();
-                    await writable.write(bytes);
-                    await writable.close();
-                    alert("❌ 密碼錯誤！紀錄已更新。");
-                    return;
-                }
-
-                if (failCount > 0) alert(`⚠️ 注意：此檔案先前有 ${failCount} 次輸入錯誤紀錄！`);
+            alert("📡 正在掃描，請靠近標籤...");
+            ndef.onreading = async ({ message }) => {
+                const decoder = new TextDecoder();
+                const pairId = decoder.decode(message.records[0].data);
                 
-                // 下載或還原
-                const mode = confirm("密碼正確！\n[確定] 原地還原檔案\n[取消] 僅下載解密檔");
-                const decrypted = bytes.slice(1, -1); // 剝離頭尾
-
-                if (mode) {
-                    const newHandle = await dirHandle.getFileHandle(name.replace('.rms', ''), { create: true });
-                    const w = await newHandle.createWritable();
-                    await w.write(decrypted); await w.close();
-                    await dirHandle.removeEntry(name);
-                } else {
-                    const blob = new Blob([decrypted]);
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a'); a.href = url; a.download = name.replace('.rms', ''); a.click();
-                }
-
-            } else {
-                // 加密邏輯
-                const header = new Uint8Array([new Uint8Array(keyBuffer)[0]]);
-                const footer = new Uint8Array([48]); // '0'
-                const combined = new Uint8Array(header.length + bytes.length + footer.length);
-                combined.set(header); combined.set(bytes, 1); combined.set(footer, combined.length - 1);
-
-                const newHandle = await dirHandle.getFileHandle(name + '.rms', { create: true });
-                const w = await newHandle.createWritable();
-                await w.write(combined); await w.close();
-                await dirHandle.removeEntry(name);
-                alert("🔒 檔案加密完成！");
-            }
-            renderFiles();
-        } catch (e) { alert("錯誤: " + e); }
+                try {
+                    const fileHandle = await rmsDirHandle.getFileHandle(`${pairId}.rms`);
+                    const file = await fileHandle.getFile();
+                    const data = JSON.parse(await file.text());
+                    
+                    document.getElementById('viewArea').style.display = 'block';
+                    document.getElementById('viewTitle').innerText = data.title;
+                    document.getElementById('viewDesc').innerText = data.desc;
+                    document.getElementById('viewImg').src = data.image || "";
+                    document.getElementById('viewImg').style.display = data.image ? "block" : "none";
+                } catch (e) { alert("找不到配對檔案，請確保 USB 已連線且內容正確。"); }
+            };
+        } catch (e) { alert("掃描失敗：" + e); }
     }
 </script>
 </body>

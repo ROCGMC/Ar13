@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rms-v5-crypto-cache';
+const CACHE_NAME = 'rms-v6-permanent-cache';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.png'];
 
 self.addEventListener('install', (e) => {

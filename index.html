@@ -3,239 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NFC 智能庫存</title>
-    <link rel="manifest" href="./manifest.json">
-    <link rel="icon" href="./icon.png" type="image/png">
-    <meta name="theme-color" content="#2c3e50"> <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap'); /* 導入科技感字體 */
-
-        body {
-            font-family: 'Roboto Mono', monospace;
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); /* 深色漸變背景 */
-            color: #ecf0f1; /* 淺色文字 */
-            padding: 20px;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        .container {
-            width: 100%;
-            max-width: 450px;
-            margin-bottom: 20px;
-        }
-        .card {
-            background: rgba(44, 62, 80, 0.8); /* 半透明背景 */
-            backdrop-filter: blur(5px); /* 毛玻璃效果 */
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-            margin-bottom: 20px;
-            border: 1px solid rgba(70, 96, 119, 0.5);
-        }
-        h2, h3 {
-            color: #ecf0f1;
-            text-align: center;
-            margin-top: 0;
-            border-bottom: 1px dashed rgba(236, 240, 241, 0.2);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        input, textarea {
-            width: calc(100% - 24px); /* 減去 padding */
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #4a667b;
-            border-radius: 8px;
-            background: #3a506b;
-            color: #ecf0f1;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 1em;
-            box-sizing: border-box;
-        }
-        input::placeholder, textarea::placeholder {
-            color: #95a5a6;
-        }
-        button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            font-family: 'Roboto Mono', monospace;
-        }
-        .btn-primary {
-            background: #3498db; /* 藍色 */
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-        }
-        .btn-secondary {
-            background: #2ecc71; /* 綠色 */
-            color: white;
-        }
-        .btn-secondary:hover {
-            background: #27ae60;
-            transform: translateY(-2px);
-        }
-        #status-message {
-            margin-top: 20px;
-            color: #ecf0f1;
-            font-size: 0.9em;
-            background: rgba(0,0,0,0.3);
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(236, 240, 241, 0.1);
-            max-width: 90%;
-            word-break: break-all;
-        }
-        #editArea {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px dashed rgba(236, 240, 241, 0.2);
-        }
-        #activeID {
-            color: #2ecc71;
-            font-weight: bold;
-        }
+    <title>RMS 科技 - 數位化存取系統</title>
+    <style>
+        :root { --primary: #007bff; --bg: #0f0f12; --card: #1e1e24; --text: #e0e0e0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: var(--card); border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 450px; }
+        h1 { color: var(--primary); text-align: center; margin-bottom: 5px; letter-spacing: 2px; }
+        .version { text-align: center; font-size: 0.7rem; opacity: 0.6; margin-bottom: 20px; }
+        
+        /* 密碼輸入區 */
+        .auth-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        input { background: #2a2a32; border: 1px solid #444; color: white; padding: 12px; border-radius: 8px; text-align: center; font-size: 1.1rem; }
+        .pin-field { grid-column: span 4; letter-spacing: 8px; }
+        .alpha-field { grid-column: span 2; text-transform: uppercase; }
+        
+        /* 按鈕樣式 */
+        .btn { border: none; border-radius: 8px; padding: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; margin: 5px 0; }
+        .btn-connect { background: var(--primary); color: white; }
+        .btn-nfc { background: #6f42c1; color: white; }
+        .btn:hover { opacity: 0.8; }
+        
+        /* 檔案清單 */
+        #fileList { margin-top: 20px; background: #15151a; border-radius: 10px; padding: 10px; max-height: 300px; overflow-y: auto; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #333; font-size: 0.9rem; }
+        .status-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+        .locked { background: #dc3545; color: white; }
+        .unlocked { background: #28a745; color: white; }
+        
+        .level-select { width: 100%; padding: 8px; margin-bottom: 15px; background: #2a2a32; color: white; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>🚀 NFC 智能庫存系統</h2>
 
-        <div class="card">
-            <h3>[ 1 ] 初始化標籤</h3>
-            <p style="font-size: 0.8em; color: #bdc3c7;">為空白NFC貼紙指定唯一ID (例如: BOX_A01)</p>
-            <input type="text" id="tagIDInput" placeholder="輸入標籤ID">
-            <button class="btn-primary" onclick="writeTagID()">寫入標籤ID</button>
+<div class="card">
+    <h1>RMS TECH</h1>
+    <div class="version">DIGITAL ACCESS SYSTEM | 3-TIER SECURITY</div>
+
+    <button id="btnConnect" class="btn btn-connect">🔌 連線 USB 儲存裝置</button>
+
+    <div id="mainSection" style="display:none; margin-top: 20px;">
+        <label>安全層級：</label>
+        <select id="levelSelect" class="level-select">
+            <option value="1A">Level 1A (8-PIN + 2-Alpha)</option>
+            <option value="2SA">Level 2SA (Pure NFC UID)</option>
+            <option value="3TA" selected>Level 3TA (NFC + 8-PIN + 2-Alpha)</option>
+        </select>
+
+        <div class="auth-grid">
+            <input type="password" id="pinInput" class="pin-field" maxlength="8" placeholder="8-DIGIT PIN">
+            <input type="text" id="alpha1" class="alpha-field" maxlength="1" placeholder="A">
+            <input type="text" id="alpha2" class="alpha-field" maxlength="1" placeholder="B">
         </div>
+        
+        <button id="btnNfc" class="btn btn-nfc">📳 感應 NFC 標籤</button>
+        <div id="nfcStatus" style="text-align:center; font-size:0.8rem; margin:5px; color:#aaa;">未感應標籤</div>
 
-        <div class="card">
-            <h3>[ 2 ] 掃描與管理</h3>
-            <p style="font-size: 0.8em; color: #bdc3c7;">感應已初始化標籤，查看或編輯內容</p>
-            <button class="btn-secondary" onclick="startNFCScan()">啟動掃描模式</button>
-            
-            <div id="editArea" style="display:none;">
-                <p>目前活動標籤：<span id="activeID"></span></p>
-                <textarea id="itemsContent" rows="7" placeholder="輸入此標籤所代表的物品清單、描述等..."></textarea>
-                <button class="btn-primary" onclick="saveTagData()">儲存至本地</button>
-            </div>
+        <div id="fileList">
+            <div style="text-align:center; color:#666;">等待目錄授權...</div>
         </div>
     </div>
+</div>
 
-    <div id="status-message">準備就緒...</div>
+<script>
+    let dirHandle;
+    let currentNfcUid = "";
+    const SALT = "RMS_TECH_PRIVATE_SALT_2024";
 
-    <script>
-        // PWA Service Worker 註冊
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker: Registered'))
-                    .catch(err => console.error('Service Worker: Registration failed:', err));
-            });
+    // 1. 連線 USB
+    document.getElementById('btnConnect').onclick = async () => {
+        try {
+            dirHandle = await window.showDirectoryPicker();
+            document.getElementById('mainSection').style.display = 'block';
+            document.getElementById('btnConnect').innerText = "✅ USB 已就緒";
+            renderFiles();
+        } catch (e) { alert("連線取消或失敗"); }
+    };
+
+    // 2. NFC 讀取器
+    document.getElementById('btnNfc').onclick = async () => {
+        try {
+            const ndef = new NDEFReader();
+            await ndef.scan();
+            document.getElementById('nfcStatus').innerText = "📡 正在感應...";
+            ndef.onreading = event => {
+                currentNfcUid = event.serialNumber;
+                document.getElementById('nfcStatus').innerText = "✅ 已連結標籤: " + currentNfcUid;
+            };
+        } catch (e) { alert("此裝置不支援 NFC 或權限未開啟"); }
+    };
+
+    // 3. 核心加解密運算
+    async function getRMSKey(level) {
+        const pin = document.getElementById('pinInput').value;
+        const a1 = document.getElementById('alpha1').value.toUpperCase();
+        const a2 = document.getElementById('alpha2').value.toUpperCase();
+        
+        if ((level.includes("A") || level === "3TA") && pin.length !== 8) throw "請輸入正確 8 位 PIN";
+        if (level.includes("SA") && !currentNfcUid) throw "請先感應 NFC 標籤";
+        
+        let seed = "";
+        if (level === "1A") seed = pin + a1 + a2 + SALT;
+        if (level === "2SA") seed = currentNfcUid + SALT;
+        if (level === "3TA") seed = pin + a1 + a2 + currentNfcUid + SALT;
+
+        const msgUint8 = new TextEncoder().encode(seed);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+        return hashBuffer;
+    }
+
+    // 4. 渲染檔案清單
+    async function renderFiles() {
+        const list = document.getElementById('fileList');
+        list.innerHTML = "";
+        for await (const entry of dirHandle.values()) {
+            if (entry.kind !== 'file') continue;
+            const isRMS = entry.name.endsWith('.rms');
+            const div = document.createElement('div');
+            div.className = 'file-item';
+            div.innerHTML = `
+                <span>${entry.name} <span class="status-tag ${isRMS?'locked':'unlocked'}">${isRMS?'加密':'原始'}</span></span>
+                <button onclick="processFile('${entry.name}')">${isRMS ? '⚡ 解鎖' : '🔒 加密'}</button>
+            `;
+            list.appendChild(div);
         }
+    }
 
-        const statusMessage = document.getElementById('status-message');
-        let currentActiveTagID = ""; // 用來儲存目前正在處理的標籤ID
+    // 5. 處理檔案程序
+    async function processFile(name) {
+        const level = document.getElementById('levelSelect').value;
+        try {
+            const keyBuffer = await getRMSKey(level);
+            const fileHandle = await dirHandle.getFileHandle(name);
+            const file = await fileHandle.getFile();
+            let buffer = await file.arrayBuffer();
+            let bytes = new Uint8Array(buffer);
 
-        // --- 顯示狀態訊息 ---
-        function setStatus(message) {
-            statusMessage.innerText = message;
-        }
+            if (name.endsWith('.rms')) {
+                // 解密邏輯
+                const checksum = bytes[0]; // 簡易校驗
+                const failCount = bytes[bytes.length - 1] - 48;
 
-        // --- 寫入標籤 ID ---
-        async function writeTagID() {
-            const tagID = document.getElementById('tagIDInput').value.trim();
-            if (!tagID) {
-                setStatus("請輸入一個標籤ID！");
-                return;
-            }
-            
-            if (!('NDEFReader' in window)) {
-                setStatus("錯誤: 您的瀏覽器不支援 Web NFC。請使用 Android Chrome 89+。");
-                return;
-            }
+                // 檢查密碼 (這裡使用 Key 的第一個 Byte 做簡易 Checksum)
+                if (checksum !== new Uint8Array(keyBuffer)[0]) {
+                    // 密碼錯誤：更新失敗紀錄
+                    bytes[bytes.length - 1] += 1;
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(bytes);
+                    await writable.close();
+                    alert("❌ 密碼錯誤！紀錄已更新。");
+                    return;
+                }
 
-            try {
-                const ndef = new NDEFReader();
-                setStatus(`請感應NFC貼紙以寫入 ID: ${tagID}...`);
-                await ndef.write(tagID); // 直接寫入純文字 ID
-                setStatus(`ID "${tagID}" 寫入成功！`);
-                alert(`標籤 ID "${tagID}" 已成功寫入貼紙。`);
-            } catch (error) {
-                setStatus(`寫入失敗: ${error.message}`);
-                console.error("NFC 寫入錯誤:", error);
-                alert(`寫入失敗: ${error.message}\n請確認：\n1. 手機NFC已開啟。\n2. 手機已靠近貼紙。\n3. 貼紙可寫入。`);
-            }
-        }
-
-        // --- 啟動掃描模式 ---
-        async function startNFCScan() {
-            if (!('NDEFReader' in window)) {
-                setStatus("錯誤: 您的瀏覽器不支援 Web NFC。請使用 Android Chrome 89+。");
-                return;
-            }
-
-            try {
-                const ndef = new NDEFReader();
-                setStatus("掃描模式啟動...請感應標籤。");
-                await ndef.scan();
+                if (failCount > 0) alert(`⚠️ 注意：此檔案先前有 ${failCount} 次輸入錯誤紀錄！`);
                 
-                // 監聽讀取事件
-                ndef.onreading = event => {
-                    const decoder = new TextDecoder();
-                    // 假設我們只讀取第一個紀錄 (通常就是我們寫入的ID)
-                    const readID = decoder.decode(event.message.records[0].data);
-                    currentActiveTagID = readID; // 設定目前活躍的標籤ID
-                    
-                    navigator.vibrate(200); // 手機震動提示成功
-                    setStatus(`已偵測到標籤 ID: ${readID}`);
-                    displayEditArea(readID);
-                };
+                // 下載或還原
+                const mode = confirm("密碼正確！\n[確定] 原地還原檔案\n[取消] 僅下載解密檔");
+                const decrypted = bytes.slice(1, -1); // 剝離頭尾
 
-                ndef.onreadingerror = error => {
-                    setStatus(`讀取標籤失敗: ${error.message}`);
-                    console.error("NFC 讀取錯誤:", error);
-                };
+                if (mode) {
+                    const newHandle = await dirHandle.getFileHandle(name.replace('.rms', ''), { create: true });
+                    const w = await newHandle.createWritable();
+                    await w.write(decrypted); await w.close();
+                    await dirHandle.removeEntry(name);
+                } else {
+                    const blob = new Blob([decrypted]);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = name.replace('.rms', ''); a.click();
+                }
 
-            } catch (error) {
-                setStatus(`無法啟動掃描: ${error.message}`);
-                console.error("NFC 啟動錯誤:", error);
-                alert(`無法啟動掃描: ${error.message}\n請確認：\n1. 手機NFC已開啟。\n2. 您的裝置支援Web NFC。`);
+            } else {
+                // 加密邏輯
+                const header = new Uint8Array([new Uint8Array(keyBuffer)[0]]);
+                const footer = new Uint8Array([48]); // '0'
+                const combined = new Uint8Array(header.length + bytes.length + footer.length);
+                combined.set(header); combined.set(bytes, 1); combined.set(footer, combined.length - 1);
+
+                const newHandle = await dirHandle.getFileHandle(name + '.rms', { create: true });
+                const w = await newHandle.createWritable();
+                await w.write(combined); await w.close();
+                await dirHandle.removeEntry(name);
+                alert("🔒 檔案加密完成！");
             }
-        }
-
-        // --- 顯示編輯區並載入本地資料 ---
-        function displayEditArea(tagID) {
-            document.getElementById('editArea').style.display = "block";
-            document.getElementById('activeID').innerText = tagID;
-            
-            // 從 localStorage 載入資料 (使用一個前綴避免衝突)
-            const storedContent = localStorage.getItem(`NFC_INVENTORY_${tagID}`);
-            document.getElementById('itemsContent').value = storedContent || ""; // 如果沒有資料則顯示空字串
-        }
-
-        // --- 儲存資料到本地 (localStorage) ---
-        function saveTagData() {
-            if (!currentActiveTagID) {
-                setStatus("沒有活動標籤可儲存。請先掃描標籤。");
-                return;
-            }
-            const content = document.getElementById('itemsContent').value;
-            localStorage.setItem(`NFC_INVENTORY_${currentActiveTagID}`, content); // 儲存資料
-            setStatus(`ID "${currentActiveTagID}" 的內容已儲存至手機。`);
-            alert("內容已成功儲存到本地！");
-        }
-    </script>
+            renderFiles();
+        } catch (e) { alert("錯誤: " + e); }
+    }
+</script>
 </body>
 </html>

@@ -1,15 +1,20 @@
 {
-  "name": "RMS CRYPTO SECURE",
-  "short_name": "RMS V6",
-  "description": "NFC 數位簽章與防偽管理系統",
+  "name": "RMS CRYPTO V7",
+  "short_name": "RMS V7",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0a0c",
   "theme_color": "#00ff88",
+  "description": "NFC Hardware-Binding Security System",
   "icons": [
     {
       "src": "icon.png",
       "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]

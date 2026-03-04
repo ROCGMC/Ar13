@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RMS CRYPTO V7 - 硬體驗證版</title>
+    <title>台灣身份安全驗證中心- 硬體驗證版</title>
     <link rel="manifest" href="manifest.json">
     <style>
         :root { --primary: #00ff88; --bg: #0a0a0c; --card: #16161d; --text: #f0f0f0; }
@@ -35,7 +35,7 @@
     <div id="status">系統初始化中...</div>
 
     <div class="card">
-        <h3>✍️ 簽署寫入 (綁定硬體 ID)</h3>
+        <h3>簽署寫入 (綁定硬體 ID)</h3>
         <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 10px;">請先用其他 App 讀取標籤 UID 並填入，以防止卡片被複製。</p>
         <input type="text" id="tagUid" placeholder="NFC 硬體 UID (例如: 04:A1:B2:C3)">
         <input type="text" id="editTitle" placeholder="物件名稱 / 標題">
@@ -44,7 +44,7 @@
     </div>
 
     <div class="card">
-        <h3>📖 安全驗證讀取</h3>
+        <h3>驗證讀取</h3>
         <button id="readBtn" class="btn btn-read" onclick="startSecureRead()">開始感應標籤</button>
         <div id="viewArea">
             <div id="vResult"></div>

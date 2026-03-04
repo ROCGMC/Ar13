@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rms-v7-final-cache';
+const CACHE_NAME = 'rms-v9-final-cache';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', (e) => {

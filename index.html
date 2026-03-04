@@ -70,7 +70,7 @@
         getReq.onsuccess = async () => {
             if (getReq.result) {
                 keyPair = getReq.result;
-                document.getElementById('status').innerText = "🟢 安全模組已就緒 (硬體綁定開啟)";
+                document.getElementById('status').innerText = "驗證模組已就緒";
             } else {
                 await generateKeys();
             }
@@ -127,14 +127,14 @@
         try {
             const ndef = new NDEFReader();
             await ndef.scan();
-            showToast("📡 掃描中，請靠近標籤...");
+            showToast("掃描中，請靠近標籤...");
             
             ndef.onreading = async ({ message }) => {
                 const raw = new TextDecoder().decode(message.records[0].data);
                 const [pairId, sigBase64] = raw.split('|');
                 
                 const localData = JSON.parse(localStorage.getItem(pairId) || "null");
-                if (!localData) return showToast("❌ 本地無此標籤紀錄");
+                if (!localData) return showToast("❌台灣身份驗證中心找不到這個UID");
 
                 const combinedData = localData.uid + "|" + pairId;
                 const sigArray = new Uint8Array(atob(sigBase64).split("").map(c => c.charCodeAt(0)));
